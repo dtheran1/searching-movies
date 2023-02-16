@@ -3,14 +3,46 @@ import './App.css'
 import { Movies } from './components/Movies'
 import { UseMovies } from './hooks/useMovies'
 
+function useSearch () {
+  const [search, updateSearch] = useState('')
+  const [error, setError] = useState(null)
+  const isFirstInput = useRef(true) // Con esta bandera validamos si ya se uso el input
+
+  useEffect(() => {
+    // Aqui validamos si el user ha puesto algo en el search y mostrmos los errores
+    if (isFirstInput.current) {
+      isFirstInput.current = search === ''
+      return
+    }
+
+    if (search === '') {
+      setError('No se puede buscar la pelicula')
+      return
+    }
+
+    if (search.match(/^\\d+$/)) {
+      setError('No se puede buscar una pelicula con numero')
+      return
+    }
+
+    if (search.length < 3) {
+      setError('La busqueda debe tener al menos 3 caracteres')
+      return
+    }
+
+    setError(null)
+  }, [search])
+
+  return { search, updateSearch, error }
+}
+
 function App () {
   const { movies } = UseMovies()
+  const { search, updateSearch, error } = useSearch()
+
   // Usando el useRef() de React
   const inputRef = useRef()
   // <input ref={inputRef} type='text' placeholder='Avengers, Star Wars, The Matrix...' />
-
-  const [query, setQuery] = useState()
-  const [error, setError] = useState(null)
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -26,34 +58,21 @@ function App () {
   }
 
   const handleChange = (event) => {
-    setQuery(event.target.value)
+    updateSearch(event.target.value)
   }
-
-  useEffect(() => {
-    if (query === '') {
-      setError('No se puede buscar la pelicula')
-      return
-    }
-
-    if (query.match(/^\\d+$/)) {
-      setError('No se puede buscar una pelicula con numero')
-      return
-    }
-
-    if (query.length < 3) {
-      setError('La busqueda debe tener al menos 3 caracteres')
-      return
-    }
-
-    setError(null)
-  }, [query])
 
   return (
     <div className='page'>
       <header>
         <h1>Buscador de pelīculas</h1>
         <form className='form' onSubmit={handleSubmit}>
-          <input onChange={handleChange} value={query} name='query' type='text' placeholder='Avengers, Star Wars, The Matrix...' />
+          <input
+            style={{
+              border: '1px solid transparent',
+              borderColor: error && 'red'
+            }}
+            onChange={handleChange} value={search} name='query' type='text' placeholder='Avengers, Star Wars, The Matrix...'
+          />
           <button type='submit'>Buscar</button>
         </form>
         {error && <p style={{ color: 'red' }}> {error} </p>}
