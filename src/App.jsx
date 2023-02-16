@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import { Movies } from './components/Movies'
-import { UseMovies } from './hooks/useMovies'
+import { useMovies } from './hooks/useMovies'
 
 function useSearch () {
   const [search, updateSearch] = useState('')
@@ -37,24 +37,26 @@ function useSearch () {
 }
 
 function App () {
-  const { movies } = UseMovies()
   const { search, updateSearch, error } = useSearch()
+  const { movies, getMovies, loading } = useMovies({ search })
 
   // Usando el useRef() de React
-  const inputRef = useRef()
+  // const inputRef = useRef()
   // <input ref={inputRef} type='text' placeholder='Avengers, Star Wars, The Matrix...' />
 
   const handleSubmit = (event) => {
     event.preventDefault()
 
     // Recuperamos el value del inputRef
-    const inputValue = inputRef.current.value
-    console.log(inputValue)
+    // const inputValue = inputRef.current.value
+    // console.log(inputValue)
 
     // Usando el formatData de JS nativo para recuperar el value de cualquier form
     const { query } = Object.fromEntries(new window.FormData(event.target))
     // const query = fields.get('query')
     console.log(query)
+
+    getMovies()
   }
 
   const handleChange = (event) => {
@@ -78,7 +80,9 @@ function App () {
         {error && <p style={{ color: 'red' }}> {error} </p>}
       </header>
       <main>
-        <Movies movies={movies} />
+        {
+          loading ? <p>Cargando ...</p> : <Movies movies={movies} />
+        }
       </main>
     </div>
   )
