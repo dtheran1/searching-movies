@@ -25,3 +25,6 @@ Primera iteración:
 ✅ Haz que la búsqueda se haga automáticamente al escribir.
 
 ✅ Evita que se haga la búsqueda continuamente al escribir (debounce)
+
+![image](https://user-images.githubusercontent.com/83596975/219513697-158498bf-0657-4a84-9382-c1c2516fa67a.png)
+
