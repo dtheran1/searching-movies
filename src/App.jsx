@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 import { Movies } from './components/Movies'
 import { useMovies } from './hooks/useMovies'
+import debounce from 'just-debounce-it'
 
 function useSearch () {
   const [search, updateSearch] = useState('')
@@ -38,11 +39,19 @@ function useSearch () {
 
 function App () {
   const { search, updateSearch, error } = useSearch()
-  const { movies, getMovies, loading } = useMovies({ search })
+  const [sort, setSort] = useState(false)
+  const { movies, getMovies, loading } = useMovies({ search, sort })
 
   // Usando el useRef() de React
   // const inputRef = useRef()
   // <input ref={inputRef} type='text' placeholder='Avengers, Star Wars, The Matrix...' />
+
+  const debouncedMovies = useCallback(
+    debounce(search => {
+      getMovies({ search })
+    }, 300)
+    , []
+  )
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -56,11 +65,19 @@ function App () {
     // const query = fields.get('query')
     console.log(query)
 
-    getMovies()
+    getMovies({ search })
   }
 
   const handleChange = (event) => {
-    updateSearch(event.target.value)
+    const newSearch = event.target.value
+    updateSearch(newSearch)
+    // cuando cambia el input se hace una llamada al api
+    // con el debounce que es una lib nos aseguramos que el llamado a la api sea despues de cierto tiempo en este caso 300ms
+    debouncedMovies(newSearch)
+  }
+
+  const handleSort = () => {
+    setSort(!sort)
   }
 
   return (
@@ -75,6 +92,7 @@ function App () {
             }}
             onChange={handleChange} value={search} name='query' type='text' placeholder='Avengers, Star Wars, The Matrix...'
           />
+          <input type='checkbox' onChange={handleSort} value={sort} />
           <button type='submit'>Buscar</button>
         </form>
         {error && <p style={{ color: 'red' }}> {error} </p>}
